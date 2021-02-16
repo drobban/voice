@@ -1,0 +1,14 @@
+{
+    "subscription": {
+                        "endpoint": "https://fcm.googleapis.com/fcm/send/fqorioNciL4:APA91bE3qXozgVFuEdPTUZADuOYZVoXgND2cLp-bnKp0mTt_ut_rIiIuZWeWXvK1V2yEWA95UpMfpV-j6a9Og1rglZfbIVV5iFlZqIc5uiO7MHYZvw5WGQRc87xNfUrfFu8TEWEZrO-y",
+                        "keys": {
+                                    "p256dh": "BEDRSV_vasxlN-axf0uAS652IuqYAgWq2hay12mIxCN3TDMduH0hvO1oSc6aGkH9XZ06U-FVPdKU3f9CuiwtLEU",
+                                    "auth": "cXhvirb8MKed0DczMikYeA"
+                                }
+    },
+    "message": {
+        "title": "Hello",
+        "link": "/admin/",
+        "message": "World from elixir"
+    }
+}
