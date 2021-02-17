@@ -10,5 +10,9 @@
         "title": "Hello",
         "link": "/admin/",
         "message": "World from elixir"
+    },
+    "vapid": {
+        "public": "BLe16VXtIyXXt_PF6ZAZXCm-EupiMGbRqN049H0",
+        "private": "MHcCAQEEICt2uORA6OAAJZcKO8D0qlhWBpcKb4S6mIwZtGo3Tj0fQ"
     }
 }

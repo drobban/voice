@@ -15,13 +15,15 @@ defmodule Notify do
 
   def specific(payload) do
     case payload do
-      %{"subscription" => sub, "message" => msg} ->
+      %{"subscription" => sub, "message" => msg, "vapid" => vapid} ->
         constructed_sub = construct_sub(sub)
         Logger.debug("#{inspect(Poison.encode!(msg))}")
         Logger.debug("#{inspect(constructed_sub)}")
 
+        keys = %{:priv => vapid["private"], :pub => vapid["public"]}
+
         if !is_nil(constructed_sub) do
-          WebPushEncryption.send_web_push(Poison.encode!(msg), constructed_sub)
+          WebPushEncryption.external_send_web_push(keys, Poison.encode!(msg), constructed_sub)
         end
 
       _default ->
