@@ -14,7 +14,17 @@ defmodule Voice.Router do
   end
 
   put "/voice_to" do
+    # Perhaps make this async?
     Notify.specific(conn.body_params)
+
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(200, Poison.encode!(message("PUT request made")))
+  end
+
+  put "/voice_at" do
+    # make Async GenServer cast to :add_job
+    # append job with GUID and send response.
 
     conn
     |> put_resp_content_type("application/json")
