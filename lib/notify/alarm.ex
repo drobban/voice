@@ -1,10 +1,14 @@
-defmodule Voice.Alarm.State do
+defmodule Notify.Alarm.State do
   defstruct current_jobs: %{}
 end
 
-defmodule Voice.Alarm do
+defmodule Notify.Alarm do
   use GenServer
   require Logger
+
+  def start_link(state) do
+    GenServer.start_link(__MODULE__, state, name: __MODULE__)
+  end
 
   @impl true
   def init(state) do
@@ -13,18 +17,56 @@ defmodule Voice.Alarm do
 
   # Use of cast is async.
   @impl true
-  def handle_cast({:add_job, payload}, state) do
-    Logger.debug("#{inspect(payload)} - #{inspect(state)}")
-    fake_id = 1010
-    new_state = %{state | current_jobs: Map.put(state.current_jobs, fake_id, :active)}
-    {:noreply, new_state}
+  def handle_call({:add_job, payload}, _from, state) do
+    case payload do
+      %{"alarm" => alarm, "data" => data} ->
+        {:ok, requested_time, _} = DateTime.from_iso8601(alarm)
+        time_delta = DateTime.diff(requested_time, DateTime.utc_now(), :millisecond)
+        id = "#{inspect(make_ref())}"
+        timer = Process.send_after(self(), {:run_job, id}, max(0, time_delta))
+
+        new_state = %{
+          state
+          | current_jobs: Map.put(state.current_jobs, id, %{:timer => timer, :data => data})
+        }
+
+        {:reply, {:ok, id}, new_state}
+
+      default ->
+        Logger.debug("#{inspect(default)}")
+        {:reply, {:failure, "missing keys"}, state}
+    end
   end
 
   @impl true
-  def handle_cast({:remove_job, id}, state) do
+  def handle_call({:remove_job, id}, _from, state) do
     Logger.debug("#{inspect(id)} - #{inspect(state)}")
-    fake_id = id
+
+    result = Process.cancel_timer(state.current_jobs[id][:timer])
     new_state = %{state | current_jobs: Map.delete(state.current_jobs, id)}
-    {:noreply, new_state}
+
+    if result do
+      {:reply, {:ok, result}, new_state}
+    else
+      {:reply, {:failure, result}, new_state}
+    end
+  end
+
+  @impl true
+  def handle_info({:run_job, id}, state) do
+    Logger.debug("Sending message")
+    Logger.debug("#{inspect(state.current_jobs[id])}")
+    data = state.current_jobs[id][:data]
+
+    if data do
+      Notify.specific(data)
+    else
+      Logger.warning("Unable to send, missing :data")
+    end
+
+    new_state = %{state | current_jobs: Map.delete(state.current_jobs, id)}
+    {:noreply, state}
   end
 end
+
+# GenServer.call(Notify.Alarm, {:add_job, %{"data" => "blaha", "alarm" => "2020202"}})

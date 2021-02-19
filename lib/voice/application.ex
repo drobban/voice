@@ -10,7 +10,11 @@ defmodule Voice.Application do
     children = [
       # Starts a worker by calling: Voice.Worker.start_link(arg)
       # {Voice.Worker, arg}
-      Voice.Endpoint
+      Voice.Endpoint,
+      %{
+        id: Notify.Alarm,
+        start: {Notify.Alarm, :start_link, [%Notify.Alarm.State{}]}
+      }
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

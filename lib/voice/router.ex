@@ -25,10 +25,24 @@ defmodule Voice.Router do
   put "/voice_at" do
     # make Async GenServer cast to :add_job
     # append job with GUID and send response.
+    {:ok, jid} = GenServer.call(Notify.Alarm, {:add_job, conn.body_params})
 
     conn
     |> put_resp_content_type("application/json")
-    |> send_resp(200, Poison.encode!(message("PUT request made")))
+    |> send_resp(
+      200,
+      Poison.encode!(message("#{Base.url_encode64(jid, padding: false)} is active"))
+    )
+  end
+
+  delete "/:reference" do
+    job_id = Base.url_decode64!(reference, padding: false)
+
+    {status, result} = GenServer.call(Notify.Alarm, {:remove_job, job_id})
+
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(200, Poison.encode!(message("#{reference} removed - #{status}")))
   end
 
   match _ do
