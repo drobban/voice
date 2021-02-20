@@ -17,9 +17,6 @@ defmodule Notify do
     case payload do
       %{"subscription" => sub, "message" => msg, "vapid" => vapid} ->
         constructed_sub = construct_sub(sub)
-        Logger.debug("#{inspect(Poison.encode!(msg))}")
-        Logger.debug("#{inspect(constructed_sub)}")
-
         keys = %{:priv => vapid["private"], :pub => vapid["public"]}
 
         cond do

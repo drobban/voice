@@ -6,15 +6,20 @@ defmodule Voice.Router do
   plug(:dispatch)
 
   get "/" do
-    Logger.debug("#{inspect(conn)}")
+    case GenServer.call(Notify.Alarm, {:get_jobs}) do
+      {:ok, job_ids} ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(200, Poison.encode!(job_ids))
 
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(200, Poison.encode!(message()))
+      _default ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(418, Poison.encode!(message("No jobs available")))
+    end
   end
 
   put "/voice_to" do
-    # Perhaps make this async?
     case Notify.specific(conn.body_params) do
       {:ok, msg} ->
         conn
@@ -62,13 +67,6 @@ defmodule Voice.Router do
 
   match _ do
     send_resp(conn, 404, "Command not found")
-  end
-
-  defp message do
-    %{
-      response_type: "in_channel",
-      text: "Hello from BOT :)"
-    }
   end
 
   defp message(arg) do

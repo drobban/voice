@@ -40,8 +40,6 @@ defmodule Notify.Alarm do
 
   @impl true
   def handle_call({:remove_job, id}, _from, state) do
-    Logger.debug("#{inspect(id)} - #{inspect(state)}")
-
     result = Process.cancel_timer(state.current_jobs[id][:timer])
     new_state = %{state | current_jobs: Map.delete(state.current_jobs, id)}
 
@@ -50,6 +48,12 @@ defmodule Notify.Alarm do
     else
       {:reply, {:failure, result}, new_state}
     end
+  end
+
+  def handle_call({:get_jobs}, _from, state) do
+    job_ids = Map.keys(state.current_jobs)
+    b64_ids = Enum.map(job_ids, &Base.url_encode64(&1, padding: false))
+    {:reply, {:ok, b64_ids}, state}
   end
 
   @impl true
@@ -67,8 +71,6 @@ defmodule Notify.Alarm do
     end
 
     new_state = %{state | current_jobs: Map.delete(state.current_jobs, id)}
-    {:noreply, state}
+    {:noreply, new_state}
   end
 end
-
-# GenServer.call(Notify.Alarm, {:add_job, %{"data" => "blaha", "alarm" => "2020202"}})

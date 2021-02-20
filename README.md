@@ -2,7 +2,7 @@
 
 A push notification micro service with a RESTful API
 
-supports three kinds of requests;
+supports the following requests;
 
 ## put voice/voice_to
 Sends notification immediately to client.
@@ -13,6 +13,9 @@ look at test/data.json for example
 Sends notification at DateTime given in "alarm" to client.
 
 look at test/alarm_data.json for example
+
+## get voice/
+Request returns a list of :reference's. Each reference is to a scheduled alarm.
 
 ## delete voice/:reference
 Request to delete scheduled notification event with B64 encoded reference string representation.

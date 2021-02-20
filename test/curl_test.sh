@@ -1,3 +1,4 @@
+#!/usr/bin/bash
 echo $1 $2
 curl -X PUT \
      --header "Content-Type: application/json" \
