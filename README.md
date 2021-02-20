@@ -2,18 +2,19 @@
 
 A push notification micro service with a RESTful API
 
-supports two kinds of requests;
+supports three kinds of requests;
 
-## voice/voice_to
+## put voice/voice_to
 Sends notification immediately to client.
 
 look at test/data.json for example
 
-## voice/voice_at
+## put voice/voice_at
 Sends notification at DateTime given in "alarm" to client.
 
 look at test/alarm_data.json for example
 
+## delete voice/:reference
+Request to delete scheduled notification event with B64 encoded reference string representation.
 
-This project is for private use intended, as to security, the private vapid key is never sent over any public network
-and is only intended to be sent on localhost.
+*This project is intended for private use. Regarding security, the private vapid key is never to be sent over any public network and is only to be sent on localhost.*
