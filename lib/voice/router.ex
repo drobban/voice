@@ -15,30 +15,45 @@ defmodule Voice.Router do
 
   put "/voice_to" do
     # Perhaps make this async?
-    Notify.specific(conn.body_params)
+    case Notify.specific(conn.body_params) do
+      {:ok, msg} ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(200, Poison.encode!(message(msg)))
 
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(200, Poison.encode!(message("PUT request made")))
+      {:failure, msg} ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, Poison.encode!(message(msg)))
+    end
   end
 
   put "/voice_at" do
     # make Async GenServer cast to :add_job
     # append job with GUID and send response.
-    {:ok, jid} = GenServer.call(Notify.Alarm, {:add_job, conn.body_params})
+    case GenServer.call(Notify.Alarm, {:add_job, conn.body_params}) do
+      {:ok, jid} ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(
+          200,
+          Poison.encode!(message("#{Base.url_encode64(jid, padding: false)} is active"))
+        )
 
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(
-      200,
-      Poison.encode!(message("#{Base.url_encode64(jid, padding: false)} is active"))
-    )
+      {:failure, fail_msg} ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(
+          400,
+          Poison.encode!(message("#{fail_msg}"))
+        )
+    end
   end
 
   delete "/:reference" do
     job_id = Base.url_decode64!(reference, padding: false)
 
-    {status, result} = GenServer.call(Notify.Alarm, {:remove_job, job_id})
+    {status, _result} = GenServer.call(Notify.Alarm, {:remove_job, job_id})
 
     conn
     |> put_resp_content_type("application/json")

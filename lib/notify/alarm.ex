@@ -58,10 +58,12 @@ defmodule Notify.Alarm do
     Logger.debug("#{inspect(state.current_jobs[id])}")
     data = state.current_jobs[id][:data]
 
-    if data do
-      Notify.specific(data)
-    else
-      Logger.warning("Unable to send, missing :data")
+    cond do
+      data ->
+        Notify.specific(data)
+
+      !data ->
+        Logger.warning("Missing :data in state at #{id}")
     end
 
     new_state = %{state | current_jobs: Map.delete(state.current_jobs, id)}
